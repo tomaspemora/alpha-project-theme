@@ -1,0 +1,435 @@
+<%page expression_filter="h"/>
+<%namespace name='static' file='../static_content.html'/>
+<%!
+from django.utils.translation import ugettext as _
+from django.utils.translation import pgettext
+from django.urls import reverse
+from lms.djangoapps.courseware.courses import get_course_about_section
+from django.conf import settings
+from six import text_type
+from common.djangoapps.edxmako.shortcuts import marketing_link
+from openedx.core.djangolib.js_utils import js_escaped_string
+from openedx.core.djangolib.markup import clean_dangerous_html, HTML, Text
+from openedx.core.lib.courses import course_image_url
+from six import string_types
+from django.utils import timezone
+now = timezone.now()
+%>
+
+<%inherit file="../main.html" />
+<%block name="headextra">
+  ## OG (Open Graph) title and description added below to give social media info to display
+  ## (https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content#tags)
+  <meta property="og:title" content="${course.display_name_with_default}" />
+  <meta property="og:description" content="${get_course_about_section(request, course, 'short_description')}" />
+</%block>
+
+<%block name="js_extra">
+  <script type="text/javascript">
+  (function() {
+    $(".register").click(function(event) {
+      $("#class_enroll_form").submit();
+      event.preventDefault();
+    });
+
+    $('#class_enroll_form').on('ajax:complete', function(event, xhr) {
+      if (xhr.status == 200) {
+        if (xhr.responseText == "") {
+          location.href = "${reverse('dashboard') | n, js_escaped_string}";
+        }
+        else {
+          location.href = xhr.responseText;
+        }
+      } else if (xhr.status == 403) {
+        $('#register_error').text(
+            (xhr.responseText ? xhr.responseText : "${_("An error has occurred. Please ensure that you are logged in to enroll.") | n, js_escaped_string}")
+        ).css("display", "block");
+      } else {
+        $('#register_error').text(
+            (xhr.responseText ? xhr.responseText : "${_("An error occurred. Please try again later.") | n, js_escaped_string}")
+        ).css("display", "block");
+      }
+    });
+
+  })(this)
+  </script>
+
+  <script src="${static.url('js/course_info.js')}"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+</%block>
+
+<%block name="pagetitle">${course.display_name_with_default}</%block>
+
+
+<script>
+  function show_default_image() {
+    return "${static.url('eol-uchile-2020/images/default-course.jpg')}";
+  }
+</script>
+<style>
+  .hero {
+    position: relative;
+  }
+  .course-info .media .icon-play {
+    top: 50%;
+    left: 50%;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background-image: -webkit-linear-gradient(-90deg, rgba(0, 156, 221, 0.58), rgba(0, 156, 221, 0.28));
+    background-image: linear-gradient(-90deg, rgba(0, 156, 221, 0.58), rgba(0, 156, 221, 0.28));
+    box-shadow: 0 1px 12px 0 rgb(0 0 0 / 40%);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 100px;
+    height: 80px;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    width: 80px;
+  }
+  .course-info .media .icon-play:after {
+    color: rgba(255,255,255,0.8);
+    content: "\25B6";
+    display: block;
+    font: normal 2em/1em "Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+    left: 50%;
+    margin-left: -11px;
+    margin-top: -16px;
+    position: absolute;
+    top: 50%;
+  }
+  .modal.video-modal{
+    width: 602px !important;
+    height: auto !important;
+  }
+  .modal.video-modal .inner-wrapper{
+    width: auto !important;
+    height: auto !important;
+  }
+  #open-course-about .inner-wrapper .menu-content-section {
+    display: none;
+    padding: 10px;
+    text-align: justify;
+}
+#open-course-about .inner-wrapper .menu-content-section.active {
+    display: block;
+}
+#open-course-about .inner-wrapper .menu {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+#open-course-about .inner-wrapper .menu .btn {
+    background-color: #aaaaaa !important;
+    color: white !important;
+    background-image: unset;
+    text-shadow: none;
+    box-shadow: none;
+    margin: 0px 8px;
+    border-radius: 5px;
+    text-align: center !important;
+    font-weight: bold;
+    margin-top: 10px;
+    font-size:24px;
+}
+#open-course-about .inner-wrapper .menu .btn.active {
+    background-color: var(--primary-color) !important;
+}
+.course-header{
+  display:block!important;
+  color:var(--primary-color) !important;
+  }
+  
+  .alpha-course-header{
+    display:none !important;
+  }
+
+  .course-header{
+      display: flex !important;
+      flex-direction: column;
+      justify-content: center;
+  }
+  .course-header .register .btn{
+        color: white !important;
+        font-weight: bold;
+        text-align: center;
+        background-image: unset !important;
+        text-shadow: none !important;
+        background-color: var(--primary-color);
+        box-shadow: none;
+        width: 70%;
+        font-size:24px;
+  }
+  .course-header h1{
+    font-size: 32px;
+    font-weight: bold;
+  }
+
+  .container-1-padding{
+    padding-left:5rem !important;
+    padding-right:5rem !important;
+
+  }
+  .container-2-padding{
+    padding-left:6rem !important;
+    padding-right:6rem !important;
+  }
+
+  @media only screen and (max-width: 768px) {
+  .container-1-padding{
+    padding-left:1rem !important;
+    padding-right:1rem !important;
+
+  }
+  .container-2-padding{
+    padding-left:1rem !important;
+    padding-right:1rem !important;
+  }
+}
+.flex-reverse-video{
+      display: flex;
+    flex-direction: row-reverse;
+}
+
+</style>
+<section class="course-info">
+  <div class="container-fluid container-1-padding px-4 pb-0 pt-3">
+    <div class="row">
+      <div class="col-md-5 course-header py-2 px-0">
+          <h1 class="text-left mb-0 pb-2 w-i-xl-90">
+            ${course.display_name_with_default}
+          </h1>
+          <h3>
+            ${course.display_org_with_default}
+          </h3>
+          %if user.is_authenticated and registered:
+            %if show_courseware_link:
+              <p class="font-italic lead enroll-message">${_("You are enrolled in this course")}</p>
+              <a href="${course_target}" class="pt-2 enroll-button-2">
+                <button class="btn w-i-xl-90" >${_("View Course")}</button>
+              </a>
+            %else:
+              <button class="btn my-auto pt-2 enroll-button w-i-xl-90" disabled>${_("You are enrolled in this course")}</button>
+            %endif
+          % elif is_course_full:
+            <button class="btn my-auto pt-2 enroll-button w-i-xl-90" disabled>${_("Course is full")}</button>
+          % elif invitation_only and not can_enroll:
+            <button class="btn my-auto pt-2 enroll-button w-i-xl-90" disabled>${_("Enrollment in this course is by invitation only")}</button>
+          % elif not is_shib_course and not can_enroll:
+            <button class="btn my-auto pt-2 enroll-button w-i-xl-90" disabled>${_("Enrollment is Closed")}</button>
+          %elif allow_anonymous:
+            %if show_courseware_link:
+              <a href="${course_target}" class="my-auto pt-2">
+                <button class="btn w-i-xl-90">${_("View Course")}</button>
+              </a>
+            %endif
+          %else:
+            <%
+              if ecommerce_checkout:
+                reg_href = ecommerce_checkout_link
+              else:
+                reg_href="#"
+              if single_paid_mode:
+                href_class = "add-to-cart"
+              else:
+                href_class = "register"
+            %>
+            <a href="${reg_href}" class="${href_class} pt-2">
+              <button class="btn w-i-xl-90">${_("Enroll Now")}</button>
+            </a>
+            <div id="register_error"></div>
+          %endif
+           <%
+              course_start_date = 'None'
+              if not course.start_date_is_still_default:
+                course_start_date = course.advertised_start or course.start
+                aux_start_date = False
+                if not isinstance(course_start_date, string_types):
+                  aux_start_date = True
+                  course_start_date = course_start_date.strftime('%Y-%m-%dT%H:%M:%S%z')
+                endif
+              endif
+            %>
+            <span class="important-dates-item-title mt-2">
+              ${_("Desde: ")}
+              %if aux_start_date:
+                % if course.self_paced and course.start <= now:
+                  <span class="important-dates-item-text start-date localized_datetime" data-language="${LANGUAGE_CODE}">${_("Today")}</span>
+                %else:
+                  <span class="important-dates-item-text start-date localized_datetime" data-format="shortDate" data-datetime="${course_start_date}" data-language="${LANGUAGE_CODE}"></span>
+                %endif
+              %else:
+                <span class="important-dates-item-text start-date localized_datetime" data-language="${LANGUAGE_CODE}">${course_start_date}</span>
+              %endif
+            </span>
+            
+      </div>
+      <div class="col-md-7 py-2 px-0">
+        % if get_course_about_section(request, course, "video"):
+          <a href="#video-modal" class="media flex-reverse-video" rel="leanModal">
+            <div class="hero">
+              <!--i class="fa fa-play-circle-o fa-4x"></i-->
+              <div class="icon-play"></div>
+              <img src="${course_image_urls['large']}" class="img-fluid course-about-image" alt="image"/>
+            </div>
+          </a>
+        %else:
+          <img src="${course_image_urls['large']}" class="img-fluid course-about-image flex-reverse-video" alt="image" />
+        % endif
+        ## <div id="video-modal" class="modal video-modal">
+        ##   <div class="inner-wrapper">
+        ##     ${HTML(get_course_about_section(request, course, "video"))}
+        ##   </div>
+        ## </div>
+      </div>
+    </div>
+    % if staff_access and studio_url is not None:
+      <div class="row">
+        <div class="wrap-instructor-info studio-view my-auto">
+          <a class="instructor-info-action" href="${studio_url}">${_("View About Page in studio")}</a>
+        </div>
+      </div>
+    % endif  
+    ## <div class="row info-row my-3 rounded">
+      ## <%
+      ##   course_start_date = 'None'
+      ##   if not course.start_date_is_still_default:
+      ##     course_start_date = course.advertised_start or course.start
+      ##     aux_start_date = False
+      ##     if not isinstance(course_start_date, string_types):
+      ##       aux_start_date = True
+      ##       course_start_date = course_start_date.strftime('%Y-%m-%dT%H:%M:%S%z')
+      ##     endif
+      ##   endif
+      ##   course_end_date = 'None'
+      ##   if course.end:
+      ##     course_end_date = course.end
+      ##     if not isinstance(course_end_date, string_types):
+      ##       course_end_date = course_end_date.strftime('%Y-%m-%dT%H:%M:%S%z')
+      ##     endif
+      ##   endif
+      ## %>
+      ## <div class="col-md-4 my-3">
+      ##   <div class="row">
+      ##     <div class="col-5 text-right">
+      ##       <img class="img-fluid icon" src="${static.url('open-uchile-theme/images/start_clock.png')}" alt="">
+      ##     </div>
+      ##     <div class="col-7 text-left pt-1 pl-0">
+      ##       <span class="important-dates-item-title">
+      ##         ${_("Classes Start:")}</br>
+      ##         %if aux_start_date:
+      ##           % if course.self_paced and course.start <= now:
+      ##             <span class="important-dates-item-text start-date localized_datetime" data-language="${LANGUAGE_CODE}">${_("Today")}</span>
+      ##           %else:
+      ##             <span class="important-dates-item-text start-date localized_datetime" data-format="shortDate" data-datetime="${course_start_date}" data-language="${LANGUAGE_CODE}"></span>
+      ##           %endif
+      ##         %else:
+      ##           <span class="important-dates-item-text start-date localized_datetime" data-language="${LANGUAGE_CODE}">${course_start_date}</span>
+      ##         %endif
+      ##       </span>
+      ##     </div>
+      ##   </div>
+      ## </div>
+      ## %if course_end_date != "None":
+      ## <div class="col-md-4 my-3">
+      ##   <div class="row">
+      ##     <div class="col-5 text-right">
+      ##       ## <img class="img-fluid icon" src="${static.url('open-uchile-theme/images/end_clock.png')}" alt="">
+      ##     </div>
+      ##     <div class="col-7 text-left pt-1 pl-0">
+      ##       <span class="important-dates-item-title">
+      ##         ${_("Classes End:")}</br>
+      ##         <span class="important-dates-item-text start-date localized_datetime" data-format="shortDate" data-datetime="${course_end_date}" data-language="${LANGUAGE_CODE}"></span>
+      ##       </span>
+      ##     </div>
+      ##   </div>
+      ## </div>
+      ## %endif
+      ## <div class="col-md-4 my-3">
+      ##   <div class="row">
+      ##     <div class="col-5 text-right">
+      ##       ## <img class="img-fluid icon" src="${static.url('open-uchile-theme/images/course_price.png')}" alt="">
+      ##     </div>
+      ##     <div class="col-7 text-left pt-1 pl-0">
+      ##       ## <span class="important-dates-item-title">
+      ##       ##   ${_("Price:")}</br>
+      ##       ##   %if course_price not in ['Gratis', 'Free', None, "None"]:
+      ##       ##     <% aux_price = int(course_price[1:]) %>
+      ##       ##     $ ${f'{aux_price:,}'.replace(',', '.')}
+      ##       ##   %else:
+      ##       ##       ${course_price}
+      ##       ##   %endif
+      ##       ## </span>
+      ##     </div>
+      ##   </div>
+      ## </div>
+    ## </div>
+    ## <div class="row">
+    ##   <h3 class="text-right">${_("There is one session available:")}</h3>
+    ##   <p class="text-right lead">${total_enrolled if total_enrolled else None}${_(" already enrolled! After a course session ends, it will be archived.")}</p>
+    ## </div>
+
+  </div>
+  <div id="open-course-about" class="container-fluid mt-4 mb-5 container-2-padding pb-0">
+      <div class="details" style="width: auto; float:none;">
+        <div class="inner-wrapper">
+          ${HTML(get_course_about_section(request, course, "overview"))}
+        </div>
+        <script>
+          $(function() {
+            //$('.faq').prependTo("#accordionFAQS");
+            $("#accordionFAQS").append($('.course-faqs').contents());
+            if($('.course-faqs').length == 0) {
+              $(".faqs-row").hide();
+            }
+          });
+        </script>
+      </div>
+      <script>
+        $(function() {
+          $("#open-course-about .menu .btn").on("click", function() {
+            // Clear 'active' class
+            $("#open-course-about .menu-content-section").removeClass("active");
+            $("#open-course-about .menu .btn").removeClass("active");
+            // Set 'active' and show
+            $(this).addClass("active");
+            $("#" + $(this).attr("data-section")).addClass("active");
+          });
+        });
+      </script>
+      ## <div class="row my-2 faqs-row">
+      ##   <div class="col-lg-8 p-3">
+      ##       <div class="course-about-card m-2">
+      ##         <h3 class="px-4">${_("Frequently Asked Questions")}</h3>
+      ##         <div class="accordion text-justify mt-3" id="accordionFAQS"></div>
+      ##       </div>
+      ##   </div>
+      ## </div>
+    </div>
+    
+</section>
+
+## Need to put this hidden form on the page so that the registration button works.
+## Since it's no harm to display a hidden form, we display it with the most permissive conditional
+## which is when the student is not registered.
+%if active_reg_button or is_shib_course:
+  <div style="display: none;">
+    <form id="class_enroll_form" method="post" data-remote="true" action="${reverse('change_enrollment')}">
+      <fieldset class="enroll_fieldset">
+        <legend class="sr">${pgettext("self","Enroll")}</legend>
+        <input name="course_id" type="hidden" value="${course.id}">
+        <input name="enrollment_action" type="hidden" value="enroll">
+      </fieldset>
+      <div class="submit">
+        <input name="submit" type="submit" value="${pgettext('self','enroll')}">
+      </div>
+    </form>
+  </div>
+%endif
+
+<%include file="../video_modal.html" />
+
+<%static:require_module_async module_name="js/dateutil_factory" class_name="DateUtilFactory">
+    DateUtilFactory.transform(iterationKey=".localized_datetime");
+</%static:require_module_async>

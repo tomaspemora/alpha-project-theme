@@ -1,0 +1,183 @@
+<%page expression_filter="h" />
+<%inherit file="main.html" />
+<%namespace name='static' file='static_content.html' />
+<%! 
+    from django.utils.translation import ugettext as _ 
+    from django.urls import reverse
+    from openedx.core.djangolib.markup import HTML, Text 
+  %>
+  ##
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  ##
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+  ##
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  ##
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="${static.url('alpha-project-theme/css/alpha-project/main.css')}">
+    <style>
+      .intro-section {
+        display: flex;
+        justify-content: space-between;
+        /* align-items: center; */
+        background-color: white;
+        /* Adjust the color to match the actual design */
+        padding: 20px;
+    
+      }
+    
+      .intro-text {
+        display: flex;
+        align-items: flex-start;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: center;
+        background-repeat: no-repeat;
+        background-size: 60% auto;
+        background-position-x: right;
+        background-position-y: center;
+      }
+      @media (min-width: 992px) {
+        .intro-text {
+          background-image: url("${static.url('alpha-project-theme/images/homebg.png')}");
+          height: 450px;
+        }
+      }
+      .intro-text h1 {
+        color: black;
+        /* Adjust the color to match the actual design */
+        font-size: 48px;
+        text-align: left;
+        font-weight: bold;
+      }
+    
+      .intro-text h2 {
+        color: black;
+        /* Adjust the color to match the actual design */
+        font-size: 24px;
+        font-weight: bold;
+      }
+    
+      .intro-text p {
+        color: black;
+        /* Adjust the color to match the actual design */
+        font-size: 20px;
+      }
+      
+    
+      .course-list-container h1 {
+        text-transform: uppercase;
+        font-size: 24px;
+        font-weight: bold;
+        background-color: var(--primary-color);
+        color: white;
+        text-align: left;
+        padding: 12px 30px;
+        border-radius: 0 40px 40px 0;
+      }
+    
+      header {
+        background-color: unset !important;
+      }
+
+
+
+    </style>
+  <main id="main" aria-label="Content" tabindex="-1">
+    <section class="home">
+      <header>
+        ##<div class="outer-wrapper">
+          ## <div class="title">
+            ## <div class="heading-group">
+              ## % if homepage_overlay_html:
+              ## ${homepage_overlay_html | n, decode.utf8}
+              ## % else:
+              ##
+              ## <%include file="index_overlay.html" />
+              ## % endif
+              ##
+            ## </div>
+            ## % if settings.FEATURES.get('ENABLE_COURSE_DISCOVERY'):
+            ## <div class="course-search">
+              ## <form method="get" action="/courses">
+                ## <label><span class="sr">${_("Search for a course")}</span>
+                  ## <input class="search-input" name="search_query" type="text" placeholder="${_(" Search for a course")}"></input>
+                  ## </label>
+                ## <button class="search-button" type="submit">
+                  ## <span class="icon fa fa-search" aria-hidden="true"></span><span class="sr">${_("Search")}</span>
+                  ## </button>
+                ## </form>
+              ## </div>
+            ## % endif
+            ## </div>
+          ##
+          ##<%include file="index_promo_video.html" />
+          ##
+        ##</div>
+        
+        <section class="intro-section container-fluid">
+          <div class="intro-text px-1 px-md-5 w-100">
+            <h1>Alpha Project</h1>
+            <h2>Desarrollo académico de la docencia</h2>
+            <p class="w-lg-40">Iniciativa integral para fortalecer la carrera académica de la docencia, innovación e investigación en educación en ciencias de la salud.</p>
+          </div>
+        </section>
+        
+
+      </header>
+
+      <section class="course-list-container container-fluid pl-0">
+        <div class="row mx-0">
+          <h1 class="px-5">
+            Cursos y Micro Cursos
+          </h1>
+        </div>
+        <div class="row">
+          <%include file="${courses_list}" />
+        </div>
+      </section>
+
+    </section>
+  </main>
+
+  % if show_homepage_promo_video:
+  <section id="video-modal" class="modal home-page-video-modal video-modal">
+    <div class="inner-wrapper">
+      <iframe title="YouTube Video" width="640" height="360"
+        src="//www.youtube.com/embed/${homepage_promo_video_youtube_id}?showinfo=0" frameborder="0"
+        allowfullscreen></iframe>
+    </div>
+  </section>
+  % endif
+
+  <%block name="js_extra">
+    <script type="text/javascript">
+      $(window).load(function () {
+        if (getParameterByName('next')) {
+          $('#login').trigger("click");
+        }
+      })
+    </script>
+  </%block>
+
+  % if show_signup_immediately is not UNDEFINED:
+  ## NOTE: This won't work in production, because anonymous views are cached, so it will
+  ## show either with or without this extra js for 3 minutes at a time.
+  <script type="text/javascript">
+    $(window).load(function () { $('#signup_action').trigger("click"); });
+  </script>
+  % endif
+  ##% if not uses_bootstrap:
+  ## ## xss-lint: disable=mako-invalid-js-filter
+  ##
+  <script type="text/javascript" src="${static.url('common/js/vendor/bootstrap.bundle.js')}"></script>
+  ##% endif
+  
